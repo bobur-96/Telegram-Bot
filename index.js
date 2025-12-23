@@ -1,67 +1,19 @@
 const TelegramBot = require("node-telegram-bot-api");
-
+const { gameOptions, againOptions } = require("./options");
 const token = "8417273508:AAGe1ozsPoKHS96Wu5vRC4qnw9pfvdrNZKg";
-
 const bot = new TelegramBot(token, { polling: true });
 
 const obj = {};
 
-const gameOptions = {
-  reply_markup: {
-    inline_keyboard: [
-      [
-        {
-          text: "1",
-          callback_data: "1",
-        },
-        {
-          text: "2",
-          callback_data: "2",
-        },
-        {
-          text: "3",
-          callback_data: "3",
-        },
-      ],
-      [
-        {
-          text: "4",
-          callback_data: "4",
-        },
-        {
-          text: "5",
-          callback_data: "5",
-        },
-        {
-          text: "6",
-          callback_data: "6",
-        },
-      ],
-      [
-        {
-          text: "7",
-          callback_data: "7",
-        },
-        {
-          text: "8",
-          callback_data: "8",
-        },
-        {
-          text: "9",
-          callback_data: "9",
-        },
-      ],
-      [
-        {
-          text: "0",
-          callback_data: "0",
-        },
-      ],
-    ],
-  },
+const startGame = async (chatId) => {
+  await bot.sendMessage(
+    chatId,
+    "Kompyuter 0 dan 9 gacham son o'yladi, siz usha sonni toposhga xarakat qiling."
+  );
+  const randomNumber = Math.floor(Math.random() * 10);
+  obj[chatId] = randomNumber;
+  await bot.sendMessage(chatId, "Tog'ri sonni toping", gameOptions);
 };
-
-// Again option
 
 const bootstrap = () => {
   bot.setMyCommands([
@@ -101,13 +53,7 @@ const bootstrap = () => {
     }
 
     if (text === "/game") {
-      await bot.sendMessage(
-        chatId,
-        "Kompuyuter 0 dan 9 gacha son o'ylaydi siz usha sonni topishga xarakat qiling"
-      );
-      const randomNumber = Math.floor(Math.random() * 10);
-      obj[chatId] = randomNumber;
-      return bot.sendMessage(chatId, "To'g'ri sonni toping", gameOptions);
+      return startGame(chatId);
     }
 
     bot.sendMessage(chatId, "Bunga hali ma'lumot joylanmagan");
@@ -117,6 +63,10 @@ const bootstrap = () => {
     const data = msg.data;
     const chatId = msg.message.chat.id;
 
+    if (data === "/again") {
+      return startGame(chatId);
+    }
+
     if (data == obj[chatId]) {
       return bot.sendMessage(
         chatId,
@@ -125,7 +75,8 @@ const bootstrap = () => {
     } else {
       return bot.sendMessage(
         chatId,
-        `Siz noto'g'ri son tanladingiz ${data}, kompyuter ${obj[chatId]} sonni tanlagan edi`
+        `Siz noto'g'ri son tanladingiz ${data}, kompyuter ${obj[chatId]} sonni tanlagan edi`,
+        againOptions
       );
     }
   });
